@@ -1,0 +1,11 @@
+# PC (Training, Auswertung, Echtzeitsystem) - Versionen wie in der Arbeit benutzt
+numpy==2.4.6
+torch==2.12.1
+mediapipe==0.10.35
+opencv-python==4.13.0.92
+pyzmq==27.1.0
+matplotlib==3.10.9
+
+# Raspberry Pi (live_pi_raw.py, record_pi_raw.py, live_pi.py) zusaetzlich:
+#   sudo apt install python3-picamera2
+# und numpy, opencv-python, pyzmq (live_pi.py ausserdem mediapipe)
