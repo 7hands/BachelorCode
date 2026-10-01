@@ -1,20 +1,20 @@
 """Aufnahme-Hauptknoten (raw-Variante): der Pi schickt JPEGs, die
-Landmark-Erkennung laeuft HIER auf dem PC. Entlastet den Pi -> hoehere FPS.
+Landmark-Erkennung läuft HIER auf dem PC. Entlastet den Pi -> höhere FPS.
 
 Der PC ist die Uhr: er sendet mit 25 Hz einen Zielzeitpunkt an die Pis und
 spielt den Klicktrack; beide liegen auf DERSELBEN Zeitachse, die Klickzeiten
-sind damit die Schlag-Labels. Nach 2 Takten Einzaehlen wird dirigiert. Die
-Landmark-Erkennung laeuft nach der Aufnahme, bremst sie also nicht.
+sind damit die Schlag-Labels. Nach 2 Takten Einzählen wird dirigiert. Die
+Landmark-Erkennung läuft nach der Aufnahme, bremst sie also nicht.
 
 make_landmarker() und detect() benutzt auch live_pc.py.
 
 Ergebnis: recordings/<Takt>-4_<bpm>bpm_<Zeitstempel>.npz mit
     lm      (Kameras, Frames, 21, 3)  normierte Bildkoordinaten, NaN = keine Hand
     t       (Frames,)                 Zeitstempel jedes Frames
-    clicks  (Schlaege,)               Klickzeitpunkte = Schlag-Labels
+    clicks  (Schläge,)               Klickzeitpunkte = Schlag-Labels
     cam_ids, bpm, meter, count_in_bars
 
-Benoetigt hand_landmarker.task im Arbeitsverzeichnis (siehe README).
+Benötigt hand_landmarker.task im Arbeitsverzeichnis (siehe README).
 
   python record_pc_raw.py --selftest
   python record_pc_raw.py --pis 1 --bpm 100 --meter 4 --bars 16
@@ -33,7 +33,7 @@ import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
-# Kalibrierkonstante fuer Audio-Ausgabelatenz + menschliche Vorwegnahme
+# Kalibrierkonstante für Audio-Ausgabelatenz + menschliche Vorwegnahme
 # (typisch 20-80 ms); in den Aufnahmen der Arbeit 0.
 CLICK_OFFSET = 0.0        # s
 FPS = 25
@@ -41,7 +41,7 @@ LEAD = 0.05               # Vorlauf, damit die Pis den Trigger rechtzeitig sehen
 
 
 def make_click(path, bpm, meter, beats, sr=44100):
-    """Klicktrack als WAV. Downbeat hoeher -> die Eins ist hoerbar."""
+    """Klicktrack als WAV. Downbeat höher -> die Eins ist hörbar."""
     beat = 60.0 / bpm
     audio = np.zeros(int(sr * beat * (beats + 1)), dtype=np.float64)
     dur = int(0.012 * sr)
@@ -70,7 +70,7 @@ def pack(data):
     -> (lm (C,F,21,3), t (F,), cam_ids (C,)).
 
     Kamera-IDs beliebig: Zeilen folgen den sortierten IDs, cam_ids merkt sich
-    die Zuordnung (fuer die Triangulation gegen die Kalibrierung noetig).
+    die Zuordnung (für die Triangulation gegen die Kalibrierung nötig).
     """
     times = sorted(data.keys())
     cams = sorted({c for f in data.values() for c in f})
@@ -96,14 +96,14 @@ def _build_landmarker(gpu):
 def make_landmarker(delegate="auto", quiet=False):
     """delegate: "auto" (misst einmal, ~1 s) | "cpu" | "gpu".
 
-    MediaPipes GPU-Pfad ist OpenGL-ES und haengt am Treiber - deshalb messen statt
+    MediaPipes GPU-Pfad ist OpenGL-ES und hängt am Treiber - deshalb messen statt
     raten. Gemessen (bench_live.py, echtes Bild mit Hand):
-      Ryzen 9 9900X + NVIDIA -> GL faellt auf llvmpipe (Software) zurueck:
+      Ryzen 9 9900X + NVIDIA -> GL fällt auf llvmpipe (Software) zurück:
           CPU  9.0 ms | GPU 66.8 ms  -> GPU 7.5x LANGSAMER
       Ryzen 5 5600H + Radeon (radeonsi, echter Treiber):
           CPU 42.4 ms | GPU 30.2 ms  -> GPU 1.4x schneller
-    Bildgroesse ist egal (1640/1280/640 px gleich schnell), MediaPipe skaliert
-    intern auf feste Modellgroesse.
+    Bildgrösse ist egal (1640/1280/640 px gleich schnell), MediaPipe skaliert
+    intern auf feste Modellgrösse.
     """
     if delegate in ("cpu", "gpu"):
         return _build_landmarker(delegate == "gpu")
@@ -126,14 +126,14 @@ def make_landmarker(delegate="auto", quiet=False):
     if best is None:
         return _build_landmarker(False)
     if not quiet:
-        print(f"MediaPipe: {best_name}-Pfad gewaehlt ({best_ms:.1f} ms/Bild)")
+        print(f"MediaPipe: {best_name}-Pfad gewählt ({best_ms:.1f} ms/Bild)")
     return best
 
 
 def detect(landmarker, jpg_b64):
     """JPEG(base64, BGR) -> Liste von 21 (x,y,z) normiert, oder None."""
     buf = np.frombuffer(base64.b64decode(jpg_b64), np.uint8)
-    bgr = cv2.imdecode(buf, cv2.IMREAD_COLOR)          # zurueck zu BGR
+    bgr = cv2.imdecode(buf, cv2.IMREAD_COLOR)          # zurück zu BGR
     rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)         # picamera2 RGB888 war real BGR
     mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=np.ascontiguousarray(rgb))
     res = landmarker.detect(mp_image)
@@ -207,7 +207,7 @@ def main(args):
 
     lm, t, cams = pack(data)
     if lm.size == 0:
-        print("KEINE Daten empfangen -> Pi-IP/Verbindung pruefen (--ip, Ports 5555/5556).")
+        print("KEINE Daten empfangen -> Pi-IP/Verbindung prüfen (--ip, Ports 5555/5556).")
         return
     out = os.path.join("recordings", f"{name}.npz")
     np.savez(out, lm=lm, t=t, clicks=labels, cam_ids=cams,
@@ -221,7 +221,7 @@ def main(args):
     if len(cams) < args.pis:
         print(f"  WARNUNG: nur {len(cams)} von {args.pis} erwarteten Kameras haben gesendet.")
     if det < 80:
-        print("  WARNUNG: niedrige Erkennungsrate -> Licht/Abstand/Ausschnitt/JPEG-Qualitaet pruefen.")
+        print("  WARNUNG: niedrige Erkennungsrate -> Licht/Abstand/Ausschnitt/JPEG-Qualität prüfen.")
 
 
 if __name__ == "__main__":
@@ -239,4 +239,4 @@ if __name__ == "__main__":
     elif a.pis:
         main(a)
     else:
-        ap.error("--pis noetig (oder --selftest)")
+        ap.error("--pis nötig (oder --selftest)")

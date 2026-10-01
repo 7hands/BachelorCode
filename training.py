@@ -1,25 +1,25 @@
-"""Training und Auswertung JE AUFNAHME - fuer den Vergleich der Fenstergroessen.
+"""Training und Auswertung JE AUFNAHME - für den Vergleich der Fenstergrössen.
 
 Je Aufnahme entscheidet die Mehrheit aller Fenster; gemessen wird der Anteil
-richtig erkannter Aufnahmen. Fuer die Wahl der Fenstergroesse interessiert
+richtig erkannter Aufnahmen. Für die Wahl der Fenstergrösse interessiert
 nur die Rangfolge. Die Auswertung je Takt macht takt_training.py, das die
 Bausteine hier (Splits, Training, Kaskade) mitbenutzt.
 
 Eine Zeile je (Split, Modell, Fenster, Seed) in der CSV - Rohwerte, kein
-Mittelwert. Schon gerechnete Kombinationen werden uebersprungen.
+Mittelwert. Schon gerechnete Kombinationen werden übersprungen.
 
-  python training.py --selfcheck          # nur zeigen, was gerechnet wuerde
+  python training.py --selfcheck          # nur zeigen, was gerechnet würde
   python training.py
   python training.py --modelle pos4,GCN --fenster 50,75 --seeds 3
 
-Jede Einstellung unten ist auch als Flag verfuegbar (gleicher Name mit --).
+Jede Einstellung unten ist auch als Flag verfügbar (gleicher Name mit --).
 """
 
 # ═══════════════════════════ EINSTELLUNGEN ═══════════════════════════════════
 
 MODELLE = ["voll12", "pos4", "tips6pos", "GCN", "TCN->TCN", "GCN->TCN"]
 
-FENSTER = [10, 25, 50, 75, 100]            # Frames, fuer die direkten Modelle
+FENSTER = [10, 25, 50, 75, 100]            # Frames, für die direkten Modelle
 KASKADE_W1 = [10, 25, 50]                  # Stufe 1 der indirekten Modelle
 KASKADE_W2 = [25, 50, 75, 100, 125, 150, 175]   # Stufe 2
 
@@ -31,9 +31,9 @@ EPOCHEN = 10
 BLOCK_CONVS = 2                        # Faltungen je TCN-Block
 BLOCK_WEIGHTNORM = True
 
-GEMITTELTE_BAHNEN = True               # kuenstliche Aufnahmen aus dem Mittel
+GEMITTELTE_BAHNEN = True               # künstliche Aufnahmen aus dem Mittel
 NUR_KAMERA_1 = False                   # True halbiert die Daten
-BLOCK2_IN_TEST = True                  # Teil 3b zaehlt im Split ohne 3 (BLOCK2_ZU)
+BLOCK2_IN_TEST = True                  # Teil 3b zählt im Split ohne 3 (BLOCK2_ZU)
                                        # zum ungesehenen Test
 
 CSV = "fenster_vergleich.csv"
@@ -55,7 +55,7 @@ import modelle as MD
 
 
 def _f(name, vorgabe, typ=str):
-    """Kommandozeilen-Flag --name ueberschreibt die Einstellung."""
+    """Kommandozeilen-Flag --name überschreibt die Einstellung."""
     flag = "--" + name.lower()
     if flag not in sys.argv:
         return vorgabe
@@ -85,7 +85,7 @@ KLASSEN = [1, 2, 3, 4, 6]
 KASK = ("TCN->TCN", "GCN->TCN")        # indirekte Modelle: Stufe 1 + Stufe 2
 HOP1 = 4                               # Kurvenraster der Stufe 1 in Frames
 # Reihenfolge der gehaltenen Personen = Reihenfolge der Zufallsziehungen, mit
-# der die gespeicherten Modelle trainiert wurden (nicht aendern).
+# der die gespeicherten Modelle trainiert wurden (nicht ändern).
 LOPO = tuple(DS.PERSONEN[i] for i in (1, 2, 0))
 ALLE = "alle Personen (80/20)"
 SPLITS = _f("splits", SPLITS) or [f"ohne {p}" for p in LOPO] + [ALLE]
@@ -94,14 +94,14 @@ SPLITS = _f("splits", SPLITS) or [f"ohne {p}" for p in LOPO] + [ALLE]
 def splits(recs):
     """-> {Name: (train, {Testname: recs})}
 
-    Je Person ein Split ohne diese Person (ungesehen), dazu ein Split ueber
+    Je Person ein Split ohne diese Person (ungesehen), dazu ein Split über
     alle. Von den trainierenden Personen werden je (Person, Taktart) 20 % der
-    Aufnahmen zurueckgehalten ("bekannt"). Beide Kameras einer Aufnahme
+    Aufnahmen zurückgehalten ("bekannt"). Beide Kameras einer Aufnahme
     bleiben zusammen. Die gemittelten Bahnen entstehen JE SPLIT nur aus den
-    Trainingsaufnahmen - sonst flossen die zurueckgehaltenen 20 % ueber die
+    Trainingsaufnahmen - sonst flossen die zurückgehaltenen 20 % über die
     Mittelbahn ihrer Person ins Training.
 
-    Teil 3b zaehlt zur Person BLOCK2_ZU (3), wird aber gesondert behandelt,
+    Teil 3b zählt zur Person BLOCK2_ZU (3), wird aber gesondert behandelt,
     weil ein Teil der Aufnahmen von einer vierten Person stammt:
       * Split ohne 3: nicht im Training; mit BLOCK2_IN_TEST Teil des
         ungesehenen Tests von 3.
@@ -141,14 +141,14 @@ def splits(recs):
         for tn, tv in tests.items():
             tn_namen = {x["name"] for x in tv}
             assert not (trn & tn_namen), f"LECK {name} / {tn}"
-            assert not (quellen & tn_namen), f"LECK ueber die Mittelbahnen: {name} / {tn}"
+            assert not (quellen & tn_namen), f"LECK über die Mittelbahnen: {name} / {tn}"
             b2_erlaubt = ohne_b2 and BLOCK2_IN_TEST and tn.startswith("ungesehen")
             assert b2_erlaubt or not any(x["block2"] for x in tv), \
                 f"Teil 3b im Test: {name} / {tn}"
         if weg:
             assert not any(x["person"] == weg for x in tr + sy), f"{weg} im Training von {name}"
         assert ohne_b2 != any(x["block2"] for x in tr + sy), \
-            f"Regel fuer Teil 3b verletzt in {name}"
+            f"Regel für Teil 3b verletzt in {name}"
     return aus
 
 
@@ -222,9 +222,9 @@ def stufe1(tr, key, seed, w1, graph):
 def kurve(mi, md, rec, w1, graph):
     """Vierkanalige Phasenkurve einer ganzen Aufnahme.
 
-    Stufe 1 laeuft auf Fenstern von w1 Frames, deren Enden HOP1 Frames
+    Stufe 1 läuft auf Fenstern von w1 Frames, deren Enden HOP1 Frames
     auseinanderliegen; von jedem Fenster werden nur die letzten HOP1 Werte
-    uebernommen, weil nur diese den vollen Kontext hinter sich haben."""
+    übernommen, weil nur diese den vollen Kontext hinter sich haben."""
     n = len(rec["raw"])
     ends = list(range(w1, n + 1, HOP1))
     if len(ends) < 2:
@@ -332,7 +332,7 @@ if __name__ == "__main__":
     print(f"Modelle {MODELLE}")
     print(f"Fenster direkt {FENSTER} | indirekt W1 {KASKADE_W1} W2 {KASKADE_W2}")
     print(f"Splits {SPLITS} | {SEEDS} Seeds | {EPOCHEN} Epochen | {DEVICE}")
-    print(f"-> {len(P) * SEEDS} Durchgaenge, Ziel {CSV}\n")
+    print(f"-> {len(P) * SEEDS} Durchgänge, Ziel {CSV}\n")
     verteilung = splits(lade_daten())
     if "--selfcheck" in sys.argv:
         zeige_splits(verteilung)
@@ -346,7 +346,7 @@ if __name__ == "__main__":
         for z in csv.DictReader(open(CSV)):
             fertig.add((z["split"], z["gehalten"], z["modell"],
                         int(z["fenster"]), int(z["w1"] or 0), int(z["seed"])))
-        print(f"{len(fertig)} Zeilen schon in {CSV}, werden uebersprungen")
+        print(f"{len(fertig)} Zeilen schon in {CSV}, werden übersprungen")
     fh = open(CSV, "a", newline="")
     w = csv.DictWriter(fh, fieldnames=SPALTEN)
     if neu:
@@ -356,7 +356,7 @@ if __name__ == "__main__":
     kur_cache = {}
     for sp, mn, win, w1 in P:
         if sp not in verteilung:
-            print(f"  Split '{sp}' unbekannt - uebersprungen"); continue
+            print(f"  Split '{sp}' unbekannt - übersprungen"); continue
         tr, tests = verteilung[sp]
         unges = next((k for k in tests if k.startswith("ungesehen")), None)
         geh = unges.split(":")[1].strip() if unges else ""
@@ -367,7 +367,7 @@ if __name__ == "__main__":
             torch.manual_seed(sd); np.random.seed(sd)
             if mn in KASK:
                 schl = (sp, mn, w1, sd)
-                if schl not in kur_cache:          # Stufe 1 fuer alle W2 wiederverwenden
+                if schl not in kur_cache:          # Stufe 1 für alle W2 wiederverwenden
                     kur_cache.clear()
                     graph = mn == "GCN->TCN"
                     mi = stufe1(tr, "ictus", sd, w1, graph)

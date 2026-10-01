@@ -2,14 +2,14 @@
 
 Die sampo-Tonspuren enthalten zwei Klicktypen, die sich an der Spitzenfrequenz
 sauber trennen lassen (hier 1100 Hz normal, 1570 Hz betont; der betonte ist
-zusaetzlich lauter). Der Abstand zwischen zwei betonten Klicks ist die
-Taktlaenge in Schlaegen -- damit gibt es fuer diese Videos eine echte
+zusätzlich lauter). Der Abstand zwischen zwei betonten Klicks ist die
+Taktlänge in Schlägen -- damit gibt es für diese Videos eine echte
 Taktannotation, die nicht aus der Bewegung stammt.
 
   python takt_klicks.py                 # sampo_antoine_ircam_12
   python takt_klicks.py --alle
 
-Schreibt takte_<name>.csv (Takt, Start, Ende, Schlaege, Tempo) und .png.
+Schreibt takte_<name>.csv (Takt, Start, Ende, Schläge, Tempo) und .png.
 """
 import csv
 import glob
@@ -22,7 +22,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-# Fruehere Handannotation von antoine 12 (Sekunden von, Sekunden bis, Takt) - nur zum Vergleich im
+# Frühere Handannotation von antoine 12 (Sekunden von, Sekunden bis, Takt) - nur zum Vergleich im
 # Bild; sie ist teilweise falsch (die 6/4-Abschnitte sind 5-6-7).
 ANTOINE_HAND = [(0, 13, 6), (13, 33, 4), (43, 56, 4), (60, 71, 6)]
 SRC = "Data/conductor-follower-master/datasets/conductors_movies_with_sound"
@@ -48,7 +48,7 @@ def klicks(name):
 
 
 def takte(t, betont):
-    """-> Liste (Start, Ende, Schlaege) zwischen aufeinanderfolgenden Akzenten."""
+    """-> Liste (Start, Ende, Schläge) zwischen aufeinanderfolgenden Akzenten."""
     k = np.where(betont)[0]
     return [(t[i], t[j], j - i) for i, j in zip(k[:-1], k[1:])]
 
@@ -65,9 +65,9 @@ def auswerten(name):
     print(f"{name}: {len(t)} Klicks, davon {betont.sum()} betont "
           f"({np.median(frq[betont]):.0f} Hz / {np.median(pegel[betont]):.3f} gegen "
           f"{np.median(frq[~betont]):.0f} Hz / {np.median(pegel[~betont]):.3f})")
-    print(f"   {len(tk)} Takte, Laengen: {folge}")
+    print(f"   {len(tk)} Takte, Längen: {folge}")
     zahl = {s: folge.count(s) for s in sorted(set(folge))}
-    print(f"   Verteilung der Taktlaengen: {zahl}   "
+    print(f"   Verteilung der Taktlängen: {zahl}   "
           f"(ausserhalb unserer Klassen 1,2,3,4,6: "
           f"{sum(v for k, v in zahl.items() if k not in (1,2,3,4,6))} Takte)")
 

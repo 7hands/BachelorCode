@@ -2,9 +2,9 @@
 
 Wertet die gespeicherten Modelle aus models/ (takt_training.py) je Takt
 aus, genau wie takt_training.py, aber nur auf Aufnahmen mit 2, 3 oder 4
-Schlaegen. Zwei Varianten:
-  alle5  - das Modell darf wie trainiert alle fuenf Klassen sagen
-  nur234 - Argmax nur ueber 2, 3, 4 (wie das Paper-System, das nur diese kennt)
+Schlägen. Zwei Varianten:
+  alle5  - das Modell darf wie trainiert alle fünf Klassen sagen
+  nur234 - Argmax nur über 2, 3, 4 (wie das Paper-System, das nur diese kennt)
 
 Testsets: "bekannt" = die 20 % aus "alle Personen (80/20)" (alle Personen im
 Training), "ungesehen" = die gehaltene Person aus den Splits ohne <Person>.
@@ -54,7 +54,7 @@ def logits(mn, mod, stufe1, rec, win, w1):
 
 
 def tabelle(zeilen):
-    """Gepoolt ueber Seeds (jeder Takt eines Seeds zaehlt einmal)."""
+    """Gepoolt über Seeds (jeder Takt eines Seeds zählt einmal)."""
     z = defaultdict(lambda: [0, 0])
     for r in zeilen:
         for k in ((r["modell"], r["gruppe"], r["variante"], int(r["takt"])),
@@ -64,7 +64,7 @@ def tabelle(zeilen):
     q = lambda k: f"{100 * z[k][0] / z[k][1]:.1f}" if z[k][1] else "–"
     modelle = [m for m in NAMEN if any(r["modell"] == m for r in zeilen)]
     for var, text in (("nur234", "Vorhersage nur 2/3/4 (wie das Paper)"),
-                      ("alle5", "Vorhersage aus allen fuenf Klassen")):
+                      ("alle5", "Vorhersage aus allen fünf Klassen")):
         print(f"\n### Nur 2/4-, 3/4-, 4/4-Takte, je Takt [%] — {text}\n")
         print("| Modell | Personen | 2/4 | 3/4 | 4/4 | gesamt | Takte |")
         print("|---|---|---|---|---|---|---|")

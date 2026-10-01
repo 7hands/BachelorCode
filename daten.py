@@ -1,11 +1,11 @@
 """Aufnahmen laden, säubern, fusionieren - plus gemittelte Bahnen.
 
-SAEUBERN    Zwei Fehlerbilder der Landmark-Erkennung werden entfernt:
+SÄUBERN     Zwei Fehlerbilder der Landmark-Erkennung werden entfernt:
             Einzelspitzen (1-3 Frames weit weg, danach wieder zurück) und
-            Ruhe-Klumpen (die zweite, ruhende Hand; erkannt an den Spruengen
-            hinein und heraus). Luecken bis MAXLUECKE Frames werden linear
+            Ruhe-Klumpen (die zweite, ruhende Hand; erkannt an den Sprüngen
+            hinein und heraus). Lücken bis MAXLUECKE Frames werden linear
             interpoliert.
-FUSION      Luecken einer Kamera werden aus der anderen ergänzt. Dazu wird auf
+FUSION      Lücken einer Kamera werden aus der anderen ergänzt. Dazu wird auf
             den Frames, in denen beide sauber sind, eine affine Abbildung der
             zweiten Kamera in die Bildkoordinaten der ersten geschätzt.
 GEMITTELT   Je (Person, Taktart) eine über alle Takte gemittelte Bahn, in
@@ -16,7 +16,7 @@ GEMITTELT   Je (Person, Taktart) eine über alle Takte gemittelte Bahn, in
 Datensatz: Datensatz/<P1|P2|P3>_<Takt>-4_<bpm>bpm_<Zeitstempel>.npz, Felder
 lm (Kameras, Frames, 21, 3), t, clicks, cam_ids, bpm, meter, count_in_bars.
 
-  python daten.py        # Uebersicht ueber den geladenen Datensatz
+  python daten.py        # Übersicht über den geladenen Datensatz
 """
 import glob
 import os
@@ -26,14 +26,14 @@ import numpy as np
 import merkmale as MM
 
 DIRS = ("Datensatz",)
-# Die drei Personen der Arbeit (1, 2, 3); im Dateinamen als Praefix P1_, P2_, P3_.
+# Die drei Personen der Arbeit (1, 2, 3); im Dateinamen als Präfix P1_, P2_, P3_.
 # Die Reihenfolge hier bestimmt, in welcher Folge der 80/20-Split seine
-# Zufallsziehungen macht (training.splits) - nicht aendern.
+# Zufallsziehungen macht (training.splits) - nicht ändern.
 PERSONEN = ("1", "3", "2")
 PRAEFIX = "P"
 # Teil 3b: Aufnahmen von Person 3, zu einem Teil von einer vierten Person, nicht
 # trennbar. Sie tragen das Merkmal block2, weil sie nie im Testset "bekannt"
-# landen duerfen (training.splits) und eigene gemittelte Bahnen bekommen.
+# landen dürfen (training.splits) und eigene gemittelte Bahnen bekommen.
 # Erkannt werden sie am Zeitstempel am Ende des Dateinamens.
 BLOCK2 = "3b"                # Bezeichnung in Ausgaben: Teil b von Person 3
 BLOCK2_ZU = PERSONEN[1]
@@ -44,19 +44,19 @@ BLOCK2_ZEITEN = {1785330803, 1785331044, 1785331379, 1785331605, 1785331814,
 TEMPI = (50, 60, 70, 85, 100, 120)
 TAKTE_SYN = 16
 
-# Saeubern
+# Säubern
 SPITZE = 0.05        # Abstand zur Nachbar-Geraden, ab dem es eine Spitze ist
 LANGSAM = 0.006      # Schrittweite, unter der ein Frame als ruhend gilt
-KLUMPEN = 0.05       # Radius der Ruhe-Haeufung
+KLUMPEN = 0.05       # Radius der Ruhe-Häufung
 FERN = 0.12          # Mindestabstand des Klumpens zur bewegten Wolke
-ANTEIL = 0.05        # Mindestanteil, ab dem ein Klumpen als solcher zaehlt
-SPRUNG = 0.10        # Schrittweite, ab der ein Uebergang ein Sprung ist
-QUOTE = 0.5          # Anteil der Uebergaenge, die Spruenge sein muessen
+ANTEIL = 0.05        # Mindestanteil, ab dem ein Klumpen als solcher zählt
+SPRUNG = 0.10        # Schrittweite, ab der ein Übergang ein Sprung ist
+QUOTE = 0.5          # Anteil der Übergänge, die Sprünge sein müssen
 MAXLUECKE = 8
 MAXREST = 0.05       # Restfehler der affinen Abbildung, ab dem nicht fusioniert wird
 
 
-# --- Saeubern -------------------------------------------------------------------
+# --- Säubern -------------------------------------------------------------------
 def mitte(lm):
     return np.nanmean(np.asarray(lm, float)[:, :, :2], axis=1)
 
@@ -98,7 +98,7 @@ def finde(p):
         for k in range(len(rest) - lauf - 1):
             a, b = k, k + lauf + 1
             if rest[b] - rest[a] > lauf + 3:
-                continue                       # zu grosse Luecke dazwischen
+                continue                       # zu grosse Lücke dazwischen
             if np.linalg.norm(pr[a] - pr[b]) > SPITZE:
                 continue                       # Nachbarn selbst weit auseinander
             w = (np.arange(1, lauf + 1) / (lauf + 1))[:, None]
@@ -109,7 +109,7 @@ def finde(p):
 
 
 def _interpoliere(lm, hab, maxluecke):
-    """Luecken bis maxluecke Frames zwischen gueltigen Frames linear fuellen."""
+    """Lücken bis maxluecke Frames zwischen gültigen Frames linear füllen."""
     g = np.where(hab)[0]
     ip = np.zeros(len(lm), bool)
     for a, b in zip(g[:-1], g[1:]):
@@ -121,7 +121,7 @@ def _interpoliere(lm, hab, maxluecke):
 
 
 def schneide(lm, maxluecke=MAXLUECKE):
-    """-> (lm gesaeubert + interpoliert, Anteil Spitzen, Anteil Klumpen, Masken)."""
+    """-> (lm gesäubert + interpoliert, Anteil Spitzen, Anteil Klumpen, Masken)."""
     lm = np.asarray(lm, float).copy()
     p = mitte(lm)
     sp, kl = finde(p)
@@ -134,7 +134,7 @@ def schneide(lm, maxluecke=MAXLUECKE):
 
 # --- Fusion zweier Kameras ------------------------------------------------------
 def affin(a, b):
-    """Schaetzt M mit b ~ M @ [a,1]. a,b: (N,2) -> (3,2), mittlerer Restfehler."""
+    """Schätzt M mit b ~ M @ [a,1]. a,b: (N,2) -> (3,2), mittlerer Restfehler."""
     A = np.hstack([a, np.ones((len(a), 1))])
     M, *_ = np.linalg.lstsq(A, b, rcond=None)
     return M, float(np.linalg.norm(A @ M - b, axis=1).mean())
@@ -185,7 +185,7 @@ def person_von(datei):
 
 
 def ist_block2(datei):
-    """Gehoert die Aufnahme zu Teil 3b? Am Zeitstempel im Dateinamen erkannt."""
+    """Gehört die Aufnahme zu Teil 3b? Am Zeitstempel im Dateinamen erkannt."""
     try:
         return int(os.path.splitext(datei)[0].rsplit("_", 1)[-1]) in BLOCK2_ZEITEN
     except ValueError:
@@ -253,7 +253,7 @@ def lade_video(pfad):
 
 
 def mittelbahn(recs, n=90):
-    """Eine ueber alle Takte gemittelte Bahn je Gruppe -> (n,4) und (n,42)."""
+    """Eine über alle Takte gemittelte Bahn je Gruppe -> (n,4) und (n,42)."""
     r2, r21 = [], []
     for r in recs:
         d = r["down"]
@@ -273,7 +273,7 @@ def mittelbahn(recs, n=90):
 
 def gemittelt(recs, tempi=TEMPI, takte=TAKTE_SYN):
     """Je (Person, Taktart) eine Mittelbahn, in mehreren Tempi als Aufnahme;
-    Teil 3b bekommt eigene Mittelbahnen. 'quellen' haelt fest, aus welchen
+    Teil 3b bekommt eigene Mittelbahnen. 'quellen' hält fest, aus welchen
     Spuren sie gemittelt wurde."""
     grp = {}
     for r in recs:
@@ -307,7 +307,7 @@ def gemittelt(recs, tempi=TEMPI, takte=TAKTE_SYN):
 if __name__ == "__main__":
     from collections import Counter
     recs = lade()
-    print(f"{len(recs)} Spuren gesaeubert "
+    print(f"{len(recs)} Spuren gesäubert "
           f"({len({r['name'].split('#')[0] for r in recs})} Aufnahmen x Kameras)")
     print(f"Personen: {dict(Counter(r['person'] for r in recs))}")
     print(f"Taktarten: {dict(sorted(Counter(r['meter'] for r in recs).items()))}")

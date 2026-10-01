@@ -1,14 +1,14 @@
 """Konduktor-Videos -> Landmarks NUR der rechten Hand (.npz).
 
-Wie video_landmarks.py, aber mit num_hands=2 und Auswahl ueber die Haendigkeit.
+Wie video_landmarks.py, aber mit num_hands=2 und Auswahl über die Händigkeit.
 Bisher lief die Erkennung mit num_hands=1; MediaPipe gibt dann die sicherste
-Hand zurueck, und das war streckenweise die linke -- die Spur springt dann
-zwischen den Haenden hin und her.
+Hand zurück, und das war streckenweise die linke -- die Spur springt dann
+zwischen den Händen hin und her.
 
-MediaPipe beschriftet die Haende aus Sicht der gefilmten Person und setzt ein
-NICHT gespiegeltes Bild voraus. Verlaesslich ist das Etikett hier nicht. Gewaehlt wird deshalb die Hand, die
+MediaPipe beschriftet die Hände aus Sicht der gefilmten Person und setzt ein
+NICHT gespiegeltes Bild voraus. Verlässlich ist das Etikett hier nicht. Gewählt wird deshalb die Hand, die
 sich BEWEGT (90%-Quantil der Verschiebung je Frame) -- die ruhende Hand liegt
-oft dauerhaft im Bild und wird sonst faelschlich verfolgt.
+oft dauerhaft im Bild und wird sonst fälschlich verfolgt.
 
   python video_landmarks_rechts.py                     # nur sampo_antoine_ircam_12
   python video_landmarks_rechts.py --alle              # alle Videos in SRC
@@ -43,11 +43,11 @@ def landmarker():
 
 
 def leithand(frames):
-    """Welches Etikett gehoert zur dirigierenden Hand?
+    """Welches Etikett gehört zur dirigierenden Hand?
 
-    Entschieden wird auf den Frames mit ZWEI erkannten Haenden: dort ist die
-    Zuordnung eindeutig, und die dirigierende Hand bewegt sich staerker als die
-    ruhende (die z.B. nur die Seite umblaettert). Median statt Quantil, weil bei
+    Entschieden wird auf den Frames mit ZWEI erkannten Händen: dort ist die
+    Zuordnung eindeutig, und die dirigierende Hand bewegt sich stärker als die
+    ruhende (die z.B. nur die Seite umblättert). Median statt Quantil, weil bei
     niedriger Schwelle einzelne Fehltreffer jedes hohe Quantil kapern.
     """
     bahn = {}
@@ -66,9 +66,9 @@ def leithand(frames):
 
 
 def spur(pfad, lmk):
-    """Zwei Durchgaenge: erst alle Treffer sammeln, dann die bewegte Hand waehlen
-    und ihr folgen. Treffer mit dem anderen Etikett werden uebernommen, wenn sie
-    auf der Bahn liegen -- MediaPipe vertauscht die Haendigkeit hier oft."""
+    """Zwei Durchgänge: erst alle Treffer sammeln, dann die bewegte Hand wählen
+    und ihr folgen. Treffer mit dem anderen Etikett werden übernommen, wenn sie
+    auf der Bahn liegen -- MediaPipe vertauscht die Händigkeit hier oft."""
     cap = cv2.VideoCapture(pfad)
     fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
     frames, spuren, zahl = [], {}, {"keine": 0, "nur Right": 0, "nur Left": 0, "beide": 0}
@@ -91,13 +91,13 @@ def spur(pfad, lmk):
     cap.release()
 
     leit, beweg = leithand(frames)
-    lms, genommen, vor = [], {"Haendigkeit": 0, "einzeln, Leithand": 0,
+    lms, genommen, vor = [], {"Händigkeit": 0, "einzeln, Leithand": 0,
                               "einzeln, auf der Bahn": 0, "verworfen": 0}, None
     for kand in frames:
         pts = None
-        if len({k[0] for k in kand}) == 2:                 # beide Haende sichtbar
+        if len({k[0] for k in kand}) == 2:                 # beide Hände sichtbar
             pts = max((k for k in kand if k[0] == leit), key=lambda k: k[1])[2]
-            genommen["Haendigkeit"] += 1
+            genommen["Händigkeit"] += 1
         elif kand:                                         # nur eine Hand sichtbar
             eigen = [k for k in kand if k[0] == leit]
             if eigen:
@@ -139,7 +139,7 @@ if __name__ == "__main__":
         print(f"{name}: {HAND} in {rate:.1%} der {len(ts)} Frames "
               f"(bisher mit einer Hand: {a:.1%})  {time.time()-t0:.0f}s")
         print(f"   Frames: {zahl}")
-        print(f"   uebernommen nach Etikett des Treffers: {genommen}")
+        print(f"   übernommen nach Etikett des Treffers: {genommen}")
         print("   mittlere x-Position je Etikett: "
               + ", ".join(f"{k} {np.mean(v):.2f}" for k, v in sorted(xpos.items()))
               + "   (0 = links im Bild)")

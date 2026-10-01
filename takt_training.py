@@ -5,11 +5,11 @@ richtige Takte / alle Takte. Je Takt entscheidet die Mehrheit der Fenster,
 deren ENDE im Takt plus Rand liegt; ein Fenster darf nach hinten in die
 vorigen Takte reichen, genau wie live.
 
-Bewertet werden beide Testsets jedes Splits: die zurueckgehaltenen 20 % der
+Bewertet werden beide Testsets jedes Splits: die zurückgehaltenen 20 % der
 Trainingspersonen ("bekannt") und die gehaltene Person ("ungesehen"). Eine
 Zeile je (Split, Modell, Fenster, Seed, Testset) mit Rohwerten. Die CSV wird
-angehaengt, schon gerechnete Kombinationen werden uebersprungen. Die Modelle
-werden als Checkpoints gespeichert; live_pc.py laedt sie.
+angehängt, schon gerechnete Kombinationen werden übersprungen. Die Modelle
+werden als Checkpoints gespeichert; live_pc.py lädt sie.
 
   python takt_training.py --selfcheck
   python takt_training.py
@@ -87,7 +87,7 @@ def plan():
 
 
 def je_takt(pred, ends, rec, rand):
-    """-> Liste (Taktart, richtig) fuer jeden Takt der Aufnahme."""
+    """-> Liste (Taktart, richtig) für jeden Takt der Aufnahme."""
     down = np.asarray(sorted(int(d) for d in rec["down"]))
     soll = TR.KLASSEN.index(int(rec["meter"]))
     e = np.asarray(ends)
@@ -119,7 +119,7 @@ def checkpoint(mn, sp, sd, win, w1, mod, mi=None, md=None):
 
 def lade_checkpoint(pfad):
     """Checkpoint -> (Modell, [Stufe-1-Ictus, Stufe-1-Downbeat] oder None, Fenster, W1),
-    auf TR.DEVICE, fuer die Offline-Auswertung (konfusion_sampo, vergleich_paper)."""
+    auf TR.DEVICE, für die Offline-Auswertung (konfusion_sampo, vergleich_paper)."""
     ck = torch.load(pfad, map_location="cpu")
     dev = TR.DEVICE
     if "s2" in ck:
@@ -146,7 +146,7 @@ if __name__ == "__main__":
     print(f"Modelle {MODELLE}")
     print(f"Fenster {FENSTER} | indirekt W1 {KASKADE_W1} W2 {KASKADE_W2}")
     print(f"Splits {SPLITS} | {SEEDS} Seeds | {TR.EPOCHEN} Epochen | Rand {RAND} Frames")
-    print(f"-> {len(P) * SEEDS} Durchgaenge, Ziel {CSV}")
+    print(f"-> {len(P) * SEEDS} Durchgänge, Ziel {CSV}")
     print(f"Modelle werden aus {MODELLDIR}/ geladen, nicht trainiert\n" if NUR_AUSWERTEN
           else f"Checkpoints: {MODELLDIR}/\n" if MODELLDIR else "Checkpoints: keine\n")
 
@@ -170,9 +170,9 @@ if __name__ == "__main__":
                         int(z["w1"] or 0), int(z["seed"])))
         offen = sum(1 for sp, mn, win, w1 in P for sd in range(SEEDS)
                     if (sp, mn, win, w1, sd) not in fertig)
-        print(f"{len(fertig)} Zeilen schon in {CSV}, {offen} Durchgaenge offen")
+        print(f"{len(fertig)} Zeilen schon in {CSV}, {offen} Durchgänge offen")
         if not offen:
-            sys.exit(f"\nNichts zu tun - {CSV} enthaelt bereits alles. Fuer einen neuen "
+            sys.exit(f"\nNichts zu tun - {CSV} enthält bereits alles. Für einen neuen "
                      f"Lauf die Datei umbenennen\noder --csv setzen (sonst werden auch "
                      f"keine Checkpoints geschrieben).")
     fh = open(CSV, "a", newline="")
@@ -183,7 +183,7 @@ if __name__ == "__main__":
     t_all = time.time()
     for sp, mn, win, w1 in P:
         if sp not in verteilung:
-            print(f"  Split '{sp}' unbekannt - uebersprungen"); continue
+            print(f"  Split '{sp}' unbekannt - übersprungen"); continue
         tr, tests = verteilung[sp]
         for sd in range(SEEDS):
             if (sp, mn, win, w1, sd) in fertig:

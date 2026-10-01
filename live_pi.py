@@ -1,9 +1,9 @@
-"""Pi-Worker fuer den Live-Betrieb MIT MediaPipe auf dem Pi.
+"""Pi-Worker für den Live-Betrieb MIT MediaPipe auf dem Pi.
 
 Die Alternative zu live_pi_raw.py: dort schickt der Pi JPEGs und der PC rechnet
 die Landmarks, hier rechnet der Pi selbst und schickt nur die 21 Punkte. Kein
 Bildtransfer, keine Aufzeichnung, nichts wird zwischengespeichert - Bild
-aufnehmen, HandLandmarker, sofort senden. Auf dem PC laeuft dazu
+aufnehmen, HandLandmarker, sofort senden. Auf dem PC läuft dazu
 
     python live_pc.py --checkpoint models/<Modell>.pt --cam 0
 
@@ -11,21 +11,21 @@ und rechnet daraus live die Taktart. Das ist die echte Betriebssituation der
 Variante "Landmarks auf dem Pi".
 
 Nebenbei misst der Pi sich selbst, denn genau das ist die offene Frage: schafft
-er die Rate ueberhaupt? Zwei Zahlen entscheiden das.
+er die Rate überhaupt? Zwei Zahlen entscheiden das.
 
   Durchsatz       wie viele Frames pro Sekunde kommen wirklich durch.
   Bediente Trigger  der PC ruft mit --trigger Hz. Was der Pi nicht schafft,
-                  faellt weg. 20% bediente Trigger heisst: vier von fuenf
+                  fällt weg. 20% bediente Trigger heisst: vier von fünf
                   Aufnahmezeitpunkten existieren gar nicht.
 
 Der Zeitstempel im Paket ist die ECHTE Aufnahmezeit, nicht der Sollzeitpunkt -
 der PC interpoliert selbst auf sein 25-Hz-Raster. Ein langsamer und
-unregelmaessiger Pi liefert also brauchbare, nur duennere Daten.
+unregelmässiger Pi liefert also brauchbare, nur dünnere Daten.
 
   python live_pi.py --id 1 --ip <IP des PCs>
-  python live_pi.py --id 1 --ip <IP des PCs> --size 820x616   # halbe Aufloesung
+  python live_pi.py --id 1 --ip <IP des PCs> --size 820x616   # halbe Auflösung
   python live_pi.py --id 1 --ip <IP des PCs>
-  python live_pi.py --id 1 --ip <IP des PCs> --size 820x616   # halbe Aufloesung --frei    # Trigger ignorieren, volle Last
+  python live_pi.py --id 1 --ip <IP des PCs> --size 820x616   # halbe Auflösung --frei    # Trigger ignorieren, volle Last
   python live_pi.py --selfcheck                        # ohne Hardware
 """
 import argparse
@@ -64,10 +64,10 @@ def drucke(d, ziel):
         print(f"  Trigger bedient       {d['trigger_bedient']} von {d['trigger_gesehen']} "
               f"= {d['trigger_quote']:.0%}")
     if d["fps_mittel"] < ziel:
-        print(f"  -> reicht NICHT fuer {ziel:.0f} Hz: Faktor "
+        print(f"  -> reicht NICHT für {ziel:.0f} Hz: Faktor "
               f"{ziel / d['fps_mittel']:.1f} zu langsam.")
     else:
-        print(f"  -> reicht fuer {ziel:.0f} Hz ({d['fps_mittel'] / ziel:.1f}x Reserve).")
+        print(f"  -> reicht für {ziel:.0f} Hz ({d['fps_mittel'] / ziel:.1f}x Reserve).")
 
 
 def selfcheck():
@@ -83,10 +83,10 @@ def selfcheck():
 def sichtfeld(picam):
     """Wird wirklich der volle Sensor gelesen?
 
-    Gleiches Seitenverhaeltnis garantiert das NICHT: picamera2 waehlt zuerst
+    Gleiches Seitenverhältnis garantiert das NICHT: picamera2 wählt zuerst
     einen Sensormodus, und manche Modi des IMX219 sind selbst schon Ausschnitte
     (1920x1080, 640x480). Erst danach wird skaliert. Deshalb hier nicht rechnen,
-    sondern ScalerCrop gegen die volle Sensorflaeche halten."""
+    sondern ScalerCrop gegen die volle Sensorfläche halten."""
     try:
         voll = tuple(picam.camera_properties.get("PixelArraySize", ()))
         cfg = picam.camera_configuration()
@@ -97,7 +97,7 @@ def sichtfeld(picam):
     print(f"  Sensor {voll}, Modus {roh}, Ausgabe "
           f"{tuple(cfg['main']['size'])}")
     if not (crop and voll):
-        return print("  Sichtfeld: ScalerCrop nicht gemeldet - ungeprueft")
+        return print("  Sichtfeld: ScalerCrop nicht gemeldet - ungeprüft")
     x, y, cw, chh = crop
     ax, ay = cw / voll[0], chh / voll[1]
     if ax > 0.97 and ay > 0.97:
@@ -128,12 +128,12 @@ def main(a):
 
     picam = Picamera2()
     picam.configure(picam.create_video_configuration({"format": "RGB888", "size": (w, h)}))
-    # Seitenverhaeltnis gegen das Trainingsformat pruefen: Landmarks sind auf
-    # [0,1] der Bildkanten normiert, ein anderes Verhaeltnis verzerrt die Figur
-    # gegenueber allen Trainingsdaten - und faellt sonst nirgends auf.
+    # Seitenverhältnis gegen das Trainingsformat prüfen: Landmarks sind auf
+    # [0,1] der Bildkanten normiert, ein anderes Verhältnis verzerrt die Figur
+    # gegenüber allen Trainingsdaten - und fällt sonst nirgends auf.
     if abs(w / h - 4 / 3) > 0.02:
         print(f"WARNUNG: {w}x{h} ist {w/h:.2f}:1, Trainingsdaten sind 4:3 (1.33:1).")
-        print("         Die Taktfigur ist damit gegenueber dem Training verzerrt.")
+        print("         Die Taktfigur ist damit gegenüber dem Training verzerrt.")
         print("         Empfohlen: 1640x1232 oder 820x616.")
 
     picam.start()
@@ -154,15 +154,15 @@ def main(a):
         while lauf:
             target = None
             if a.frei:
-                while sub in dict(poller.poll(0)):       # nur auf Stop hoeren
+                while sub in dict(poller.poll(0)):       # nur auf Stop hören
                     if sub.recv_json().get("stop"):
                         lauf = False
                 if not lauf:
                     break
             else:
-                # Bis zum NEUESTEN Trigger durchspulen. Ist der Pi langsamer als die
-                # Ausloeserate, stauen sich die alten sonst auf und er faellt immer
-                # weiter zurueck. Was uebersprungen wird, zaehlt als nicht bedient.
+                # Bis zum NEÜSTEN Trigger durchspulen. Ist der Pi langsamer als die
+                # Auslöserate, stauen sich die alten sonst auf und er fällt immer
+                # weiter zurück. Was übersprungen wird, zählt als nicht bedient.
                 if sub not in dict(poller.poll(20)):
                     continue
                 while True:
@@ -220,7 +220,7 @@ def main(a):
         picam.stop()
 
     if len(dt) < 3:
-        return print("\nZu wenige Frames fuer eine Aussage.")
+        return print("\nZu wenige Frames für eine Aussage.")
     d = zusammenfassung(ms, loop, dt, det, gesehen, bedient)
     print("\n" + "=" * 62)
     print(f"PI {a.id}   {w}x{h}   Belichtung {a.exposure} us   "
@@ -236,23 +236,23 @@ if __name__ == "__main__":
     p.add_argument("--id", type=int, default=1,
                    help="CAMERA_ID, pro Pi eindeutig. In allen Aufnahmen wurden "
                         "1 und 2 benutzt, nicht 0 und 1.")
-    p.add_argument("--ip", default=None, help="IP des PCs (ausser bei --selfcheck noetig)")
+    p.add_argument("--ip", default=None, help="IP des PCs (ausser bei --selfcheck nötig)")
     p.add_argument("--size", default="1640x1232",
                    help="BxH. Default = Sensormodus des IMX219 (4:3, volles "
                         "Sichtfeld) und damit identisch zu record_pi_raw.py, mit "
                         "dem 76 der 77 Trainingsaufnahmen entstanden sind. "
-                        "820x616 ist exakt die Haelfte, also dasselbe Sichtfeld "
-                        "bei halber Aufloesung - schneller, ohne Geometriebruch. "
+                        "820x616 ist exakt die Hälfte, also dasselbe Sichtfeld "
+                        "bei halber Auflösung - schneller, ohne Geometriebruch. "
                         "NICHT 1280x720 nehmen: 16:9 beschneidet vertikal.")
     p.add_argument("--exposure", type=int, default=4000, help="us, wie record_pi.py")
     p.add_argument("--warm", type=int, default=10, help="Frames vor Messbeginn verwerfen")
-    p.add_argument("--ziel", type=float, default=25.0, help="Zielrate fuer das Urteil")
+    p.add_argument("--ziel", type=float, default=25.0, help="Zielrate für das Urteil")
     p.add_argument("--frei", action="store_true",
                    help="Trigger ignorieren und volle Last fahren. Misst die Obergrenze "
                         "der Hardware, ist aber nicht mehr kamerasynchron.")
     p.add_argument("--selfcheck", action="store_true")
     a = p.parse_args()
     if not a.selfcheck and not a.ip:
-        p.error("--ip noetig")
+        p.error("--ip nötig")
     sys.stdout.reconfigure(line_buffering=True)
     selfcheck() if a.selfcheck else main(a)

@@ -3,8 +3,8 @@
 Ablauf je empfangenem Bild:
   1. Der PC sendet mit --trigger Hz einen Zielzeitpunkt (target_time) an die
      Pis; diese nehmen genau dann ein Bild auf (live_pi_raw.py).
-  2. Das JPEG kommt zurueck, MediaPipe berechnet hier die 21 Handlandmarks.
-     Fehlt die Hand, wird die letzte gueltige Hand wiederholt.
+  2. Das JPEG kommt zurück, MediaPipe berechnet hier die 21 Handlandmarks.
+     Fehlt die Hand, wird die letzte gültige Hand wiederholt.
   3. Die Spur wird mit den ECHTEN Aufnahmezeiten auf das 25-Hz-Raster des
      Trainings interpoliert (Raster am neuesten Bild verankert), kausal
      medianfiltert und auf ein Fenster geschnitten - dieselbe Rechnung wie im
@@ -12,8 +12,8 @@ Ablauf je empfangenem Bild:
   4. Das Modell aus takt_training.py sagt die Taktart vorher; ausgegeben wird
      die Mehrheit der letzten neun Vorhersagen.
 
-Die Pis koennen alternativ MediaPipe selbst rechnen und nur die Landmarks
-schicken (live_pi.py) - dann entfaellt Schritt 2 hier.
+Die Pis können alternativ MediaPipe selbst rechnen und nur die Landmarks
+schicken (live_pi.py) - dann entfällt Schritt 2 hier.
 
   python live_pc.py --checkpoint models/pos4_alle_Personen_80_20_s0.pt
   python live_pc.py --checkpoint models/TCN_TCN_alle_Personen_80_20_s0.pt --takt 3
@@ -39,8 +39,8 @@ MEHRHEIT = 9              # Ausgabe = Mehrheit der letzten neun Vorhersagen
 def fenster(buf, win):
     """Puffer [(t, (21,2))] -> {'raw': (win,4), 'r21': (win,42)} oder None.
 
-    Reihenfolge wie im Training: fuellen -> auf das 25-Hz-Raster interpolieren
-    -> glaetten (braucht MEDPAD Vorlauf) -> auf genau win Zeilen schneiden."""
+    Reihenfolge wie im Training: füllen -> auf das 25-Hz-Raster interpolieren
+    -> glätten (braucht MEDPAD Vorlauf) -> auf genau win Zeilen schneiden."""
     if len(buf) < 8:
         return None
     n = win + MM.MEDPAD
@@ -65,9 +65,9 @@ def fenster(buf, win):
 
 def kaskade_build(mi, md, ck):
     """Fensterbauer der indirekten Modelle: fenster-dict mit W1+W2 Zeilen ->
-    Phasenkurven (4, W2). Stufe 1 laeuft auf Fenstern, deren Enden HOP1 Frames
-    auseinanderliegen und am NEUESTEN Frame verankert sind; von jedem Fenster
-    werden die letzten HOP1 Werte uebernommen - wie im Training (training.kurve)."""
+    Phasenkurven (4, W2). Stufe 1 läuft auf Fenstern, deren Enden HOP1 Frames
+    auseinanderliegen und am NEÜSTEN Frame verankert sind; von jedem Fenster
+    werden die letzten HOP1 Werte übernommen - wie im Training (training.kurve)."""
     W1, W2, hop, var = ck["w1"], ck["w2"], ck["hop1"], ck["variante"]
     n = W1 + W2
     ein = MD.eingang("beat_gcn" if var == "graph" else "beat", var)
@@ -126,7 +126,7 @@ def bericht(a, E, KL):
         print(f"  Pi {cid}: {d['fps_mittel']:.1f} fps, {d['ms_mittel']:.1f} ms MediaPipe, "
               f"Hand erkannt {d['erkannt']:.0%}")
     if not E["roh"]:
-        return print("  Kein vollstaendiges Fenster - zu wenig Daten.")
+        return print("  Kein vollständiges Fenster - zu wenig Daten.")
     print(f"  Vorhersagen        {len(E['roh'])}, erste nach {E['t'][0] - E['t_erst']:.1f} s")
     if a.takt is None:
         return print("  (ohne --takt keine Trefferquote)")
@@ -146,7 +146,7 @@ def main(a):
         raise SystemExit(f"--takt {a.takt} nicht in {KL}")
     print(f"Modell {ck['arch']} ({ck['split']}, Seed {ck['seed']}) | Vorlauf {win} Frames "
           f"= {win / MM.FPS:.1f} s | {ck['params_gesamt']} Parameter")
-    print(f"Raster {MM.FPS} Hz | Ausloeserate {a.trigger} Hz | Kamera {a.cam}")
+    print(f"Raster {MM.FPS} Hz | Auslöserate {a.trigger} Hz | Kamera {a.cam}")
     landmarker = None                 # erst bauen, wenn wirklich Bilder kommen
 
     keep_s = 2.0 * (win + MM.MEDPAD) / MM.FPS
@@ -245,7 +245,7 @@ if __name__ == "__main__":
     ap.add_argument("--checkpoint", required=True, help="Modell aus takt_training.py")
     ap.add_argument("--cam", type=int, default=1, help="Kamera-ID des ausgewerteten Pis")
     ap.add_argument("--trigger", type=float, default=25.0,
-                    help="Ausloeserate in Hz, unabhaengig vom 25-Hz-Trainingsraster")
+                    help="Auslöserate in Hz, unabhängig vom 25-Hz-Trainingsraster")
     ap.add_argument("--delegate", default="auto", choices=("auto", "cpu", "gpu"))
     ap.add_argument("--takt", type=int, default=None,
                     help="angesagte Taktart -> am Ende Trefferquote")

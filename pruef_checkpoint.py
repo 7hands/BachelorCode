@@ -1,9 +1,9 @@
-"""Laeuft ein Checkpoint aus takt_training.py auf dem Live-Pfad?
+"""Läuft ein Checkpoint aus takt_training.py auf dem Live-Pfad?
 
-Schiebt Aufnahmen aus Datensatz/ Frame fuer Frame durch denselben Puffer,
+Schiebt Aufnahmen aus Datensatz/ Frame für Frame durch denselben Puffer,
 Fensterbauer und dasselbe Modell wie live_pc.py und vergleicht mit der
-bekannten Taktart. Damit ist ohne Kamera und Pi geprueft, dass die Datei
-geladen, das Modell richtig gebaut und der Eingang richtig gefuellt wird.
+bekannten Taktart. Damit ist ohne Kamera und Pi geprüft, dass die Datei
+geladen, das Modell richtig gebaut und der Eingang richtig gefüllt wird.
 
   python pruef_checkpoint.py                          # alle in models/
   python pruef_checkpoint.py --datei models/pos4_....pt --n 6

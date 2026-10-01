@@ -1,7 +1,7 @@
-"""Live-Bild mit den erkannten Handlandmarks - fuer Fotos und zur Kontrolle.
+"""Live-Bild mit den erkannten Handlandmarks - für Fotos und zur Kontrolle.
 
 Zeigt das Kamerabild mit dem Handskelett, das MediaPipe erkennt (derselbe
-HandLandmarker wie im Echtzeitsystem). Mit --zwei-punkte werden zusaetzlich
+HandLandmarker wie im Echtzeitsystem). Mit --zwei-punkte werden zusätzlich
 die beiden Punkte markiert, die die TCN-Modelle bekommen (Median der
 Fingerspitzen und Handgelenk), mit --spur die Bahn des Fingerspitzen-Medians
 der letzten N Bilder - so wird die Taktfigur sichtbar.
@@ -16,7 +16,7 @@ letzten neun Vorhersagen) und oben rechts ins Bild geschrieben.
 
 Alle --alle Sekunden (Vorgabe 5) wird automatisch ein Bild gespeichert, sobald
 eine Hand erkannt ist, in den Ordner bilder/ - zum Aussuchen. --alle 0 schaltet
-das ab. Tasten: Leertaste oder s = sofort speichern, q oder Esc = beenden. Fuer ein Foto mit dem Pi dort in voller Aufloesung
+das ab. Tasten: Leertaste oder s = sofort speichern, q oder Esc = beenden. Für ein Foto mit dem Pi dort in voller Auflösung
 aufnehmen: python live_pi_raw.py --id 1 --ip <PC> --size 1640x1232
 (dann reicht eine niedrige Rate, z. B. --trigger 10 hier).
 """
@@ -63,7 +63,7 @@ class Takt:
         print(f"Modell {ck['arch']}: erste Vorhersage nach {self.win / FPS:.1f} s")
 
     def neu(self, t, pts):
-        """Ein Bild dazu -> Text fuer die Anzeige."""
+        """Ein Bild dazu -> Text für die Anzeige."""
         if pts is not None:
             self.buf.append((t, pts))
         elif self.buf:
@@ -94,7 +94,7 @@ def schreibe(bild, text):
 
 def zeichne(bild, pts, zwei_punkte, spur):
     """Skelett, optional die zwei Modellpunkte und die Bahn, direkt ins Bild."""
-    s = max(1, round(bild.shape[1] / 1000))              # Strichstaerke mit der Aufloesung
+    s = max(1, round(bild.shape[1] / 1000))              # Strichstärke mit der Auflösung
     if len(spur) > 1:
         cv2.polylines(bild, [np.int32(spur)], False, GELB, 2 * s, cv2.LINE_AA)
     if pts is None:
@@ -112,8 +112,8 @@ def zeichne(bild, pts, zwei_punkte, spur):
 
 
 def bilder_webcam(nr):
-    print(f"Oeffne Webcam {nr} ...", flush=True)
-    # V4L2 direkt: der Standardweg ueber GStreamer bleibt unter Linux teils haengen
+    print(f"Öffne Webcam {nr} ...", flush=True)
+    # V4L2 direkt: der Standardweg über GStreamer bleibt unter Linux teils hängen
     cap = cv2.VideoCapture(nr, cv2.CAP_V4L2) if sys.platform.startswith("linux") \
         else cv2.VideoCapture(nr)
     if not cap.isOpened():
@@ -204,5 +204,5 @@ if __name__ == "__main__":
                     help="automatisch alle N Sekunden speichern (0 = aus)")
     ap.add_argument("--delegate", default="cpu", choices=("auto", "cpu", "gpu"),
                     help="cpu reicht hier; auto probiert auch die GPU, deren Start "
-                         "mit manchen Treibern haengen bleibt")
+                         "mit manchen Treibern hängen bleibt")
     main(ap.parse_args())

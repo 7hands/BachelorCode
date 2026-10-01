@@ -1,11 +1,11 @@
-"""Klickzeiten aus der Tonspur -- ueber die Lautstaerke, ohne Tempoannahme.
+"""Klickzeiten aus der Tonspur -- über die Lautstärke, ohne Tempoannahme.
 
 Die sampo-Tonspuren sind digitale Stille mit kurzen Klicks darin (Median des
 Pegels -120 dB, Klicks 20 ms lang bei etwa 0.12 Vollaussteuerung). Ein Klick
-ist damit schlicht eine Stelle, an der ueberhaupt etwas zu hoeren ist.
+ist damit schlicht eine Stelle, an der überhaupt etwas zu hören ist.
 
-Frueher (klick_audio.py, §17) lief das ueber die Ableitung der RMS-Huellkurve
-und in §31 zusaetzlich ueber ein angepasstes 500-ms-Raster. Beides war falsch:
+Früher (klick_audio.py, §17) lief das über die Ableitung der RMS-Hüllkurve
+und in §31 zusätzlich über ein angepasstes 500-ms-Raster. Beides war falsch:
 die Ableitung erzeugt auf Stille Artefakte, und das Raster setzt ein
 konstantes Tempo voraus -- das Tempo wechselt hier aber zwischen den Takten.
 
@@ -60,7 +60,7 @@ def auswerten(name):
         return print(f"{name}: nur {len(t)} Impulse")
     if still < 0.5:
         print(f"{name}: nur {still:.0%} Stille -- das ist Musik, kein Klicktrack. "
-              f"Uebersprungen.")
+              f"Übersprungen.")
         return
     d = np.diff(t)
     lokal = np.array([np.median(d[max(0, i - 3):i + 4]) for i in range(len(d))])
@@ -78,7 +78,7 @@ def auswerten(name):
           f"{d.min()*1000:.0f}-{d.max()*1000:.0f} ms "
           f"= {60/d.max():.0f}-{60/d.min():.0f}/min -- KEIN festes Tempo")
     if len(verdacht):
-        print(f"   {len(verdacht)} auffaellig lange Abstaende (moeglicherweise "
+        print(f"   {len(verdacht)} auffällig lange Abstände (möglicherweise "
               f"ausgelassener Klick): " + ", ".join(f"{t[i]:.1f}s ({d[i]*1000:.0f}ms)"
                                                     for i in verdacht))
 

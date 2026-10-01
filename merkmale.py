@@ -1,15 +1,15 @@
 """Merkmale aus den Handlandmarks - dieselbe Rechnung im Training und live.
 
-Eine Landmark-Spur wird kausal aufbereitet (Luecken vorwaerts fuellen, Median
-ueber die letzten 5 Frames) und daraus je Fenster die Eingabe eines Modells
+Eine Landmark-Spur wird kausal aufbereitet (Lücken vorwärts füllen, Median
+über die letzten 5 Frames) und daraus je Fenster die Eingabe eines Modells
 gebaut. Jedes Fenster wird mit seiner EIGENEN Statistik normiert (Mittelwert
 abziehen, isotrop skalieren) - es gibt keinen Zustand, der live erst
-einschwingen muesste.
+einschwingen müsste.
 
 Eingaben der Modelle:
-  voll12    Fingerspitzen-Median + Handgelenk, Position + 1. und 2. Ableitung  12 Kanaele
-  pos4      dieselben zwei Punkte, nur Position                                 4 Kanaele
-  tips6pos  5 Fingerspitzen einzeln + Handgelenk, nur Position                 12 Kanaele
+  voll12    Fingerspitzen-Median + Handgelenk, Position + 1. und 2. Ableitung  12 Kanäle
+  pos4      dieselben zwei Punkte, nur Position                                 4 Kanäle
+  tips6pos  5 Fingerspitzen einzeln + Handgelenk, nur Position                 12 Kanäle
   Graph     alle 21 Landmarks als (2, W, 21)
 
   python merkmale.py        # Selbsttest: offline == live
@@ -28,7 +28,7 @@ TIPS6 = (4, 8, 12, 16, 20, 0)
 
 
 def _ffill(x):
-    """NaN vorwaerts fuellen (kausal); fuehrende NaN mit dem ersten gueltigen Wert."""
+    """NaN vorwärts füllen (kausal); führende NaN mit dem ersten gültigen Wert."""
     x = np.asarray(x, float)
     ok = np.isfinite(x)
     if not ok.any():
@@ -48,8 +48,8 @@ def _medfilt_causal(x, k=5):
 
 
 def points(lm_cam):
-    """(F,21,>=2) -> (F,4) = [tips_h, tips_v, wrist_h, wrist_v], NaN gefuellt,
-    noch nicht geglaettet. Live wird dazwischen auf 25 Hz resampled."""
+    """(F,21,>=2) -> (F,4) = [tips_h, tips_v, wrist_h, wrist_v], NaN gefüllt,
+    noch nicht geglättet. Live wird dazwischen auf 25 Hz resampled."""
     lm = np.asarray(lm_cam, float)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", RuntimeWarning)      # Frames ohne Hand
@@ -71,7 +71,7 @@ def smooth(pts):
 
 
 def resample(pts, ts, n, fps=FPS):
-    """Unregelmaessig abgetastete Punkte -> die letzten n Frames auf 25-Hz-Raster.
+    """Unregelmässig abgetastete Punkte -> die letzten n Frames auf 25-Hz-Raster.
 
     ts = echte Zeitstempel (s). Das Raster endet am neuesten Bild; fehlende
     Bilder werden linear interpoliert. None, wenn der Puffer das Fenster
@@ -84,7 +84,7 @@ def resample(pts, ts, n, fps=FPS):
 
 
 def raw_track(lm_cam):
-    """(F,21,>=2) -> (F,4) zwei Punkte, NaN gefuellt + kausal geglaettet."""
+    """(F,21,>=2) -> (F,4) zwei Punkte, NaN gefüllt + kausal geglättet."""
     p = points(lm_cam)
     return None if p is None else smooth(p)
 
@@ -130,7 +130,7 @@ def feats(rec, s, e, variant):
 
 
 def graph_win(rec, s, e):
-    """Fenster -> (2, W, 21). EIN Mittelwert und EINE Skala fuer die ganze Hand,
+    """Fenster -> (2, W, 21). EIN Mittelwert und EINE Skala für die ganze Hand,
     damit die Handform erhalten bleibt."""
     w = rec["r21"][s:e].reshape(e - s, 21, 2)
     w = w - w.reshape(e - s, -1).mean()
@@ -139,11 +139,11 @@ def graph_win(rec, s, e):
 
 
 def phase_target(ictus, T):
-    """Soll-Phase 0..2pi zwischen aufeinanderfolgenden Schlaegen als (cos, sin).
+    """Soll-Phase 0..2pi zwischen aufeinanderfolgenden Schlägen als (cos, sin).
 
     -> (target (T,2), valid (T,) bool). Am Schlag ist cos = 1, auf halbem Weg
-    zum naechsten Schlag cos = -1; der Sinus unterscheidet die beiden Haelften.
-    Gueltig nur zwischen zwei annotierten Schlaegen."""
+    zum nächsten Schlag cos = -1; der Sinus unterscheidet die beiden Hälften.
+    Gültig nur zwischen zwei annotierten Schlägen."""
     target = np.stack([np.ones(T), np.zeros(T)], axis=1)
     valid = np.zeros(T, dtype=bool)
     ic = np.array(sorted(int(f) for f in ictus if 0 <= f < T))
@@ -173,7 +173,7 @@ if __name__ == "__main__":
     off = feats(rec, 400 - W, 400, "voll12")
     live = feats({"raw": raw_track(lm[-(W + MEDPAD):])}, MEDPAD, W + MEDPAD, "voll12")
     assert np.allclose(off, live, atol=1e-9), np.abs(off - live).max()
-    ts = np.arange(400) / FPS                                # gleichmaessig -> identisch
+    ts = np.arange(400) / FPS                                # gleichmässig -> identisch
     rs = resample(points(lm), ts, W + MEDPAD)
     assert np.allclose(smooth(rs)[-W:], rec["raw"][-W:], atol=1e-9)
     print(f"merkmale OK: offline == live (diff {np.abs(off - live).max():.1e}), "

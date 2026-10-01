@@ -1,6 +1,6 @@
 """Konfusionsmatrix je Takt auf den sampo-Videos -> konfusion_sampo_takt.csv/.png
 
-Zeilen: tatsaechliche Taktlaenge aus dem Klicktrack. Spalten: Vorhersage
+Zeilen: tatsächliche Taktlänge aus dem Klicktrack. Spalten: Vorhersage
 (1, 2, 3, 4, 6). Je Takt entscheidet die Mehrheit der Fenster, die in ihm enden.
 Die Zeilen sind auf 1 normiert, leere Felder stehen als 0.00 da.
 
@@ -72,11 +72,11 @@ def bild(zaehl, mo, split):
     cb = fig.colorbar(bi, ax=ax, fraction=0.035, pad=0.02, ticks=[0, 0.25, 0.5, 0.75, 1])
     cb.ax.tick_params(labelsize=7.5)
     # Bilder der Arbeit ohne Titel (Modellname steht in der Caption);
-    # nur die Ausnahme-Splits bekommen einen, damit man sie auseinanderhaelt
+    # nur die Ausnahme-Splits bekommen einen, damit man sie auseinanderhält
     if split != TR.ALLE:
         fig.suptitle(f"{NAMEN.get(mo, mo)} — {split}, {SEEDS} Seeds", fontsize=9.5)
-    # Standardsplit behaelt die alten Dateinamen, damit sie im LaTeX-Ordner
-    # nur ersetzt werden muessen
+    # Standardsplit behält die alten Dateinamen, damit sie im LaTeX-Ordner
+    # nur ersetzt werden müssen
     datei = ("konfusion_" + re.sub(r"[^A-Za-z0-9]+", "_", mo).strip("_")
              + ("" if split == TR.ALLE
                 else "_" + re.sub(r"[^A-Za-z0-9]+", "_", split).strip("_").lower())
@@ -148,7 +148,7 @@ if __name__ == "__main__":
         w.writerows(je_video)
     print(f"-> {CSV_VIDEO}")
 
-    # Erkennungsrate je Takt und Video, Mittel ueber die Seeds (ohne 5er und 7er)
+    # Erkennungsrate je Takt und Video, Mittel über die Seeds (ohne 5er und 7er)
     print("\n| Modell | " + " | ".join(v.replace("sampo_", "").replace("_ircam", "")
                                        for v in VIDEOS) + " | Durchschnitt |")
     print("|---" * (len(VIDEOS) + 2) + "|")
